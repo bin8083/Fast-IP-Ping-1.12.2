@@ -1,7 +1,25 @@
+# What & Why & How
 
-# Features
+For servers whose addresses are represented solely by a literal IP, e.g. 192.168.2.10:25565, disable reverse DNS lookups in the corresponding InetAddress object
 
-    Performance. Oculus should fully utilize your graphics card when paired with optimization mods like Rubidium.
-    Mod compatibility. Oculus should make a best effort to be compatible with modded environments.
-    Backwards compatibility. All existing ShadersMod / OptiFine shader packs should just work on Iris, without any modifications required.
-    A well-organized codebase. I'd like for working with Iris code to be a pleasant experience overall.
+Many non-loopback IPs lack associated domain names, which makes reverse lookups time-consuming
+
+     // java.net.InetAddress#getHostName(boolean)
+     String getHostName(boolean check) {
+     if (holder().getHostName() == null) {  // It will be null if InetAddress.getByName() received a literal IP
+     holder().hostName = InetAddress.getHostFromNameService(this, check);  // <-- takes forever
+     }
+     return holder().getHostName();
+     }
+
+This option sets the domain of those servers directly to their IP, bypassing the reverse DNS check
+
+This results in a 1s ~ 5s reduction in time for servers with literal IP address. Affects the following environments:
+
+    Pinging the server in the server list screen
+    Connecting to the server
+
+# Environment
+
+    Client-side only
+    Fabric / Forge / NeoForge mod loader. No extra requirement is needed
